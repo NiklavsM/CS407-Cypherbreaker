@@ -14,12 +14,17 @@ public class CypherBreakerPattern {
 
 
     public CypherBreakerPattern(String encodedText) {
-        sureMapping.put('e','e');
+//        sureMapping.put('e', 'e');
+//        sureMapping.put('r', 'a');
         readInDictionary();
-        String[] encodedMessage = encodedText.split("\\s+");
+        String[] encodedMessage = encodedText.toUpperCase().split("\\s+");
         calculatePossibleMappings(encodedMessage);
         calculatePossibleMappings(encodedMessage);
         calculatePossibleMappings(encodedMessage);
+        calculatePossibleMappings(encodedMessage);
+        calculatePossibleMappings(encodedMessage);
+        calculatePossibleMappings(encodedMessage);
+//        tryOutKeys();
         System.out.println("encodedMessage size " + encodedMessage.length);
     }
 
@@ -39,7 +44,7 @@ public class CypherBreakerPattern {
 
     private void readInDictionary() {
         ClassLoader classLoader = getClass().getClassLoader();
-        File file = new File(classLoader.getResource("mostCommon1000words.txt").getFile());
+        File file = new File(classLoader.getResource("dictionary.txt").getFile());
         try {
             BufferedReader br = new BufferedReader(new FileReader(file));
             String word;
@@ -100,14 +105,21 @@ public class CypherBreakerPattern {
         System.out.println("WORD " + encryptedWord);
         List<String> possibleWords = patternsToWords.get(getWordPattern(encryptedWord));
         Map<Character, Set<Character>> mapping = new HashMap<>();
+        System.out.println("______");
         for (int k = 0; k < encryptedWord.length(); k++) {
             if (!mapping.containsKey(encryptedWord.charAt(k))) { //Map didint have mapping to this character just yet.
                 mapping.put(encryptedWord.charAt(k), new HashSet<>());
             }
             for (String wordFromDic : possibleWords) {
-                if (wordIsFineByKnownLetters(wordFromDic,encryptedWord)) {
+                if (wordIsFineByKnownLetters(wordFromDic, encryptedWord)) {
+//                    System.out.println("COULD be WORD " + wordFromDic);
                     mapping.get(encryptedWord.charAt(k)).add(wordFromDic.charAt(k));
                 }
+            }
+        }
+        if (encryptedWord.equals("hennrse")) {
+            for (Character c : mapping.keySet()) {
+                System.out.println("BINGO       " + c + " possible mappings " + mapping.get(c) + " " + mapping.get(c).size());
             }
         }
         addToFinalMapping(mapping);
@@ -129,11 +141,21 @@ public class CypherBreakerPattern {
     private void addToFinalMapping(Map<Character, Set<Character>> newMapping) {
         for (Character c : newMapping.keySet()) {
             if (finalMapping.containsKey(c)) {
-                for (Character mappedChar : newMapping.get(c)) {
-                    if (!finalMapping.get(c).contains(mappedChar)) {
-                        finalMapping.get(c).remove(c);
+//                for (Character mappedChar : newMapping.get(c)) {
+//                    if (!finalMapping.get(c).contains(mappedChar)) {
+//                        finalMapping.get(c).remove(c);
+//                    }
+//                }
+                Iterator<Character> iterator = finalMapping.get(c).iterator();
+                while (iterator.hasNext()) {
+                    Character mappedChar = iterator.next();
+                    if (!newMapping.get(c).contains(mappedChar)) {
+                        iterator.remove();
                     }
                 }
+//                for (Character mappedChar : finalMapping.get(c)) {
+//
+//                }
             } else {
                 finalMapping.put(c, newMapping.get(c));
             }
@@ -155,9 +177,19 @@ public class CypherBreakerPattern {
                 }
             }
         }
-        for(Character key : sureMapping.keySet()){
+        for (Character key : sureMapping.keySet()) {
             System.out.println("Key: " + key + " value: " + sureMapping.get(key));
         }
+    }
+
+    private void tryOutKeys(String[] encodedMessage) {
+        String[] decodedMessage = new String[encodedMessage.length];
+
+
+    }
+
+    private boolean isInDic(String word) {
+        return dictionary.contains(word);
     }
 
 }
