@@ -1,4 +1,5 @@
 import javax.print.DocFlavor;
+import javax.swing.text.html.HTMLDocument;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -173,47 +174,63 @@ public class CypherBreakerPattern {
 
     private void tryOutKeys(Map<Character, Set<Character>> finalMap, String[] encodedMessage) {
 
+        Random rnd = new Random();
+
         int maxGoodWords = 0;
         Map<Character, Character> bestMap;
         int keyCounter = 0;
-        for (Character c : finalMap.keySet()) {
-            for (Character mapping : finalMap.get(c)) {
-                Map<Character, Character> mapToTry = new HashMap<>();
-                keyCounter++;
-                Set<Character> usedLetters = new HashSet<>();
-                mapToTry.put(c, mapping);
-                usedLetters.add(mapping);
-                for (Character c2 : finalMap.keySet()) {
-                    if (c2 != c) {
-                        for (Character mapping2 : finalMap.get(c2)) {
-                            if (!usedLetters.contains(mapping2)) {
-                                mapToTry.put(c2, mapping2);
-                                usedLetters.add(mapping2);
-                            }
-                        }
+        Map<Character,Integer> charIterator = new HashMap<>();
+//        for(Character c : finalMap.keySet()){
+//            charIterator.put(c,0);
+//        }
+
+        while (keyCounter < 1000000000) {
+            boolean badKey = false;
+            Map<Character, Character> mapToTry = new HashMap<>();
+            Set<Character> charUsed = new HashSet<>();
+            for (Character c : finalMap.keySet()) {
+                Character[] possibleChars = new Character[finalMap.get(c).size()];
+                Iterator<Character> iter = finalMap.get(c).iterator();
+                int k = 0;
+                while (iter.hasNext()) {
+                    Character possibleChar = iter.next();
+//                    System.out.println("possibleChar:  " + possibleChar +  " "+ charUsed.contains(possibleChar));
+                    if (!charUsed.contains(possibleChar.charValue())) {
+                        possibleChars[k] = possibleChar;
+                        k++;
                     }
                 }
-                for (Character ca : mapToTry.keySet()) {
-                    System.out.println("MapToTry       " + ca + " possible mappings " + mapToTry.get(ca)  + "maxGoodWords " + maxGoodWords);
+                int randomChar = rnd.nextInt(possibleChars.length);
+                keyCounter++;
+                if (randomChar > -1 && possibleChars[randomChar] != null) { // possibleChars[randomChar] != null FIX need to check out where null appears
+                    mapToTry.put(c, possibleChars[randomChar]);
+                    charUsed.add(possibleChars[randomChar]);
+                } else {
+//                    System.out.println("CHAR " + c);
+                    badKey = true;
                 }
-                System.out.println();
+            }
+            if (!badKey) {
                 int goodWords = howManyGoodWords(mapToTry, encodedMessage);
                 if (maxGoodWords < goodWords) {
+                    System.out.println("HERE2");
                     maxGoodWords = goodWords;
                     bestMap = mapToTry;
                     decode(rawEncodedText, bestMap);
                     for (Character ca : bestMap.keySet()) {
-                        System.out.println("BesMap       " + ca + " possible mappings " + bestMap.get(ca)  + " maxGoodWords " + maxGoodWords);
+                        System.out.println("BesMap       " + ca + " possible mappings " + bestMap.get(ca) + " maxGoodWords " + maxGoodWords);
                     }
                 }
-                if (maxGoodWords > encodedMessage.length - 1) {
+                if (maxGoodWords > 15) {
                     System.out.println("KEYCOUNTER " + keyCounter);
                     return;
                 }
-
             }
         }
+
+
         System.out.println("KEYCOUNTER " + keyCounter);
+
     }
 
     private int howManyGoodWords(Map<Character, Character> map, String[] encodedMessage) {
@@ -235,18 +252,6 @@ public class CypherBreakerPattern {
             }
         }
         return goodWords;
-    }
-//        for(Character c : finalMap.keySet()){
-//            for(Character possibleChar){
-//                for(int i = 0; i<encodedMessage.length;i++){
-//                    decodedMessage[i] = encodedMessage[i].replace()
-//                }
-//            }
-//        }
-
-
-    private boolean isInDic(String word) {
-        return dictionary.contains(word);
     }
 
 }
