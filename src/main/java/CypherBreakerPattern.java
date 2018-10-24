@@ -14,7 +14,7 @@ public class CypherBreakerPattern {
 
 
     public CypherBreakerPattern(String encodedText) {
-        rawEncodedText = encodedText;
+        rawEncodedText = encodedText.toUpperCase();
 //        sureMapping.put('e', 'e');
 //        sureMapping.put('r', 'a');
         readInDictionary();
@@ -28,7 +28,7 @@ public class CypherBreakerPattern {
     }
 
     private void decode(String encodedText, Map<Character, Character> mapping) {
-
+        System.out.println("ENCODED: " + encodedText);
         StringBuilder decodedText = new StringBuilder();
         for (int i = 0; i < encodedText.length(); i++) {
             if (mapping.containsKey(encodedText.charAt(i))) {
@@ -169,37 +169,51 @@ public class CypherBreakerPattern {
                 }
             }
         }
-//        for (Character key : sureMapping.keySet()) {
-//            System.out.println("Key: " + key + " value: " + sureMapping.get(key));
-//        }
     }
 
     private void tryOutKeys(Map<Character, Set<Character>> finalMap, String[] encodedMessage) {
 
         int maxGoodWords = 0;
         Map<Character, Character> bestMap;
-
+        int keyCounter = 0;
         for (Character c : finalMap.keySet()) {
             for (Character mapping : finalMap.get(c)) {
                 Map<Character, Character> mapToTry = new HashMap<>();
+                keyCounter++;
+                Set<Character> usedLetters = new HashSet<>();
                 mapToTry.put(c, mapping);
+                usedLetters.add(mapping);
                 for (Character c2 : finalMap.keySet()) {
                     if (c2 != c) {
                         for (Character mapping2 : finalMap.get(c2)) {
-                            mapToTry.put(c2, mapping2);
+                            if (!usedLetters.contains(mapping2)) {
+                                mapToTry.put(c2, mapping2);
+                                usedLetters.add(mapping2);
+                            }
                         }
                     }
                 }
-                System.out.println("OPAA");
-                if (maxGoodWords < howManyGoodWords(mapToTry, encodedMessage)) {
-                    maxGoodWords = howManyGoodWords(mapToTry, encodedMessage);
+                for (Character ca : mapToTry.keySet()) {
+                    System.out.println("MapToTry       " + ca + " possible mappings " + mapToTry.get(ca)  + "maxGoodWords " + maxGoodWords);
+                }
+                System.out.println();
+                int goodWords = howManyGoodWords(mapToTry, encodedMessage);
+                if (maxGoodWords < goodWords) {
+                    maxGoodWords = goodWords;
                     bestMap = mapToTry;
                     decode(rawEncodedText, bestMap);
+                    for (Character ca : bestMap.keySet()) {
+                        System.out.println("BesMap       " + ca + " possible mappings " + bestMap.get(ca)  + " maxGoodWords " + maxGoodWords);
+                    }
                 }
-                if (maxGoodWords > 5) return;
+                if (maxGoodWords > encodedMessage.length - 1) {
+                    System.out.println("KEYCOUNTER " + keyCounter);
+                    return;
+                }
 
             }
         }
+        System.out.println("KEYCOUNTER " + keyCounter);
     }
 
     private int howManyGoodWords(Map<Character, Character> map, String[] encodedMessage) {
@@ -216,7 +230,7 @@ public class CypherBreakerPattern {
             }
 
             if (dictionary.contains(decodedText.toString())) {
-                System.out.println("WHY " + decodedText.toString());
+//                System.out.println("WHY " + decodedText.toString());
                 goodWords++;
             }
         }
