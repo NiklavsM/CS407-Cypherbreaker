@@ -14,9 +14,10 @@ public class CypherBreakerPattern {
 
 
     public CypherBreakerPattern(String encodedText) {
-        sureMapping.put('E','E');
+        sureMapping.put('e','e');
         readInDictionary();
         String[] encodedMessage = encodedText.split("\\s+");
+        calculatePossibleMappings(encodedMessage);
         calculatePossibleMappings(encodedMessage);
         calculatePossibleMappings(encodedMessage);
         System.out.println("encodedMessage size " + encodedMessage.length);
@@ -38,7 +39,7 @@ public class CypherBreakerPattern {
 
     private void readInDictionary() {
         ClassLoader classLoader = getClass().getClassLoader();
-        File file = new File(classLoader.getResource("dictionary.txt").getFile());
+        File file = new File(classLoader.getResource("mostCommon1000words.txt").getFile());
         try {
             BufferedReader br = new BufferedReader(new FileReader(file));
             String word;
@@ -100,7 +101,7 @@ public class CypherBreakerPattern {
         List<String> possibleWords = patternsToWords.get(getWordPattern(encryptedWord));
         Map<Character, Set<Character>> mapping = new HashMap<>();
         for (int k = 0; k < encryptedWord.length(); k++) {
-            if (!mapping.containsKey(encryptedWord.charAt(k))) {
+            if (!mapping.containsKey(encryptedWord.charAt(k))) { //Map didint have mapping to this character just yet.
                 mapping.put(encryptedWord.charAt(k), new HashSet<>());
             }
             for (String wordFromDic : possibleWords) {
@@ -116,11 +117,12 @@ public class CypherBreakerPattern {
         for (int i = 0; i < encryptedWord.length(); i++) {
             if (sureMapping.containsKey(encryptedWord.charAt(i))) {
                 if (wordFromDic.charAt(i) != sureMapping.get(encryptedWord.charAt(i))) {
-//                    System.out.println("wordFromDic rejected: " + wordFromDic);
+//                    System.out.println("wordFromDic rejected: " + wordFromDic + " encrypted word " + encryptedWord + " chars " + wordFromDic.charAt(i) + " " + sureMapping.get(encryptedWord.charAt(i)));
                     return false;
                 }
             }
         }
+//        System.out.println("Accepted: " + wordFromDic + " Encrypted: " + encryptedWord);
         return true;
     }
 
@@ -152,6 +154,9 @@ public class CypherBreakerPattern {
 
                 }
             }
+        }
+        for(Character key : sureMapping.keySet()){
+            System.out.println("Key: " + key + " value: " + sureMapping.get(key));
         }
     }
 
