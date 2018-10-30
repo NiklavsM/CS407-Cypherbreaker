@@ -18,10 +18,14 @@ class CypherBreakerPattern {
         String[] encodedMessage = encodedText.toUpperCase().split("\\s+");
         Map<Character, Set<Character>> finalMapping = calculatePossibleMappings(encodedMessage);
 
-        while (!finalMapping.equals(calculatePossibleMappings(encodedMessage))) {
-            finalMapping = calculatePossibleMappings(encodedMessage);
+        while (true) {
+            Map<Character, Set<Character>> newMapping = calculatePossibleMappings(encodedMessage);
+            if (finalMapping.equals(newMapping)) {
+                break;
+            }
+            finalMapping = newMapping;
+            printLetterMap(finalMapping);
         }
-
         tryOutKeys(finalMapping, encodedMessage);
     }
 
@@ -42,6 +46,7 @@ class CypherBreakerPattern {
     //Reads in possible words
     private void readInDictionary() {
         ClassLoader classLoader = getClass().getClassLoader();
+//        File file = new File(classLoader.getResource("dictionary.txt").getFile());
         File file = new File(classLoader.getResource("commonwords.txt").getFile());
         try {
             BufferedReader br = new BufferedReader(new FileReader(file));
@@ -65,7 +70,7 @@ class CypherBreakerPattern {
 
     }
 
-    // Returns a word pattern e.g. "good" -> 1223
+    // Returns a word pattern e.g. "good" -> 1,2,2,3
     private List<Integer> getWordPattern(String word) {
         Map<Character, Integer> lettersUsed = new HashMap<>();
         List<Integer> pattern = new LinkedList<>();
@@ -89,13 +94,6 @@ class CypherBreakerPattern {
             mapAWord(encodedWord, finalMapping);
         }
         removeLettersFromFinalMap(finalMapping);
-        double possibleKeys = 1;
-        for (Character c : finalMapping.keySet()) {
-            System.out.println(c + " possible mappings " + finalMapping.get(c) + " " + finalMapping.get(c).size());
-            possibleKeys = possibleKeys * finalMapping.get(c).size();
-        }
-        System.out.println("Possible keys: " + +possibleKeys);
-
         return finalMapping;
     }
 
@@ -128,7 +126,7 @@ class CypherBreakerPattern {
         return true;
     }
 
-    // Remove chars from final mapping if newMapping cant have it as a potential mapping
+    // Remove chars from final mapping if newMapping cannot have it as a potential mapping
     private void addToFinalMapping(Map<Character, Set<Character>> newMapping, Map<Character, Set<Character>> finalMapping) {
         for (Character c : newMapping.keySet()) {
             if (finalMapping.containsKey(c)) {
@@ -150,7 +148,6 @@ class CypherBreakerPattern {
                     if (!key.equals(c)) {
                         finalMapping.get(key).remove(sureChar);
                     }
-
                 }
             }
         }
@@ -226,6 +223,17 @@ class CypherBreakerPattern {
             }
         }
         return goodWords;
+    }
+
+    // prints possible mapping from letters to set of letters
+    private void printLetterMap(Map<Character, Set<Character>> map) {
+        double possibleKeys = 1;
+        for (Character c : map.keySet()) {
+            System.out.println(c + " possible mappings " + map.get(c) + " " + map.get(c).size());
+            possibleKeys = possibleKeys * map.get(c).size();
+        }
+        System.out.println("Possible keys: " + +possibleKeys);
+        System.out.println();
     }
 
 }
