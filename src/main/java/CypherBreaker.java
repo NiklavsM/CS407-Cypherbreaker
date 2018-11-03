@@ -32,7 +32,7 @@ public class CypherBreaker {
         mapping.keySet().forEach(c -> System.out.println(c + " : " + mapping.get(c)));
         System.out.println();
         decode(encodedText, mapping);
-        readInDictionary();
+//        readInDictionary();
     }
 
     private void decode(String encodedText, Map<Character, Character> mapping) {
