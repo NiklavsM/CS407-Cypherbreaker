@@ -13,9 +13,9 @@ class CypherBreakerPattern {
 
 
     CypherBreakerPattern(String encodedText) {
-        rawEncodedText = encodedText.toUpperCase();
+        rawEncodedText = encodedText.toLowerCase();
         readInDictionary();
-        String[] encodedMessage = encodedText.toUpperCase().split("\\s+");
+        String[] encodedMessage = encodedText.toLowerCase().split("\\s+");
         Map<Character, Set<Character>> finalMapping = calculatePossibleMappings(encodedMessage);
 
         while (true) {
@@ -31,7 +31,7 @@ class CypherBreakerPattern {
 
     // Decodes the message using given mapping
     private void decode(String encodedText, Map<Character, Character> mapping) {
-        System.out.println("ENCODED: " + encodedText);
+        System.out.println("Encoded message:              " + encodedText);
         StringBuilder decodedText = new StringBuilder();
         for (int i = 0; i < encodedText.length(); i++) {
             if (mapping.containsKey(encodedText.charAt(i))) {
@@ -40,14 +40,14 @@ class CypherBreakerPattern {
                 decodedText.append(encodedText.charAt(i));
             }
         }
-        System.out.println("DECODED: " + decodedText);
+        System.out.println("One of the possible decoding: " + decodedText);
     }
 
     //Reads in possible words
     private void readInDictionary() {
         ClassLoader classLoader = getClass().getClassLoader();
-//        File file = new File(classLoader.getResource("dictionary.txt").getFile());
         File file = new File(classLoader.getResource("commonwords.txt").getFile());
+
         try {
             BufferedReader br = new BufferedReader(new FileReader(file));
             String word;
@@ -62,12 +62,9 @@ class CypherBreakerPattern {
                     patternsToWords.put(pattern, newList);
                 }
             }
-            System.out.println("DONE " + patternsToWords.keySet().size());
-
         } catch (IOException e) {
             e.printStackTrace();
         }
-
     }
 
     // Returns a word pattern e.g. "good" -> 1,2,2,3
@@ -102,7 +99,7 @@ class CypherBreakerPattern {
         List<String> possibleWords = patternsToWords.get(getWordPattern(encryptedWord));
         Map<Character, Set<Character>> mapping = new HashMap<>();
         for (int k = 0; k < encryptedWord.length(); k++) {
-            if (!mapping.containsKey(encryptedWord.charAt(k))) { //Map didint have mapping to this character just yet.
+            if (!mapping.containsKey(encryptedWord.charAt(k))) { //Map did not have mapping to this character just yet.
                 mapping.put(encryptedWord.charAt(k), new HashSet<>());
             }
             for (String wordFromDic : possibleWords) {
@@ -158,10 +155,9 @@ class CypherBreakerPattern {
 
         Random rnd = new Random();
         int maxGoodWords = 0;
-        Map<Character, Character> bestMap;
-        int keysTriedCounter = 0;
+        Map<Character, Character> bestMap = null;
 
-        while (keysTriedCounter < 100000000) {
+        while (true) {
             boolean badKey = false;
             Map<Character, Character> mapToTry = new HashMap<>();
             Set<Character> charsUsed = new HashSet<>();
@@ -186,24 +182,20 @@ class CypherBreakerPattern {
                 }
             }
             if (!badKey) {
-                keysTriedCounter++;
                 int goodWords = howManyGoodWords(mapToTry, encodedMessage);
                 if (maxGoodWords < goodWords) {
                     maxGoodWords = goodWords;
                     bestMap = mapToTry;
-                    decode(rawEncodedText, bestMap);
-                    for (Character ca : bestMap.keySet()) {
-                        System.out.println("BesMap       " + ca + " possible mappings " + bestMap.get(ca) + " maxGoodWords " + maxGoodWords);
-                    }
-                    System.out.println("Keys tried " + keysTriedCounter);
                 }
                 if (maxGoodWords >= encodedMessage.length) {
-                    System.out.println("Keys tried " + keysTriedCounter);
+                    decode(rawEncodedText, bestMap);
+                    for (Character ca : bestMap.keySet()) {
+                        System.out.println("Final mapping: " + ca + " maps to " + bestMap.get(ca));
+                    }
                     return;
                 }
             }
         }
-        System.out.println("Keys tried " + keysTriedCounter + " reached end");
     }
 
     // Counts how many valid words form using the map
@@ -232,7 +224,7 @@ class CypherBreakerPattern {
             System.out.println(c + " possible mappings " + map.get(c) + " " + map.get(c).size());
             possibleKeys = possibleKeys * map.get(c).size();
         }
-        System.out.println("Possible keys: " + +possibleKeys);
+        System.out.println("A rough estimate of possible keys: " + possibleKeys);
         System.out.println();
     }
 
